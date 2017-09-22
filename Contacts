@@ -1,0 +1,85 @@
+### Libraries ###
+
+import os
+
+### Class for Contacts ###
+
+class Contact_List:
+    def __read__(self):
+        file_path = os.path.join("docs", "Contacts.txt")
+        file = open(file_path, "r+")
+        contact_list = []
+        seek_point = 0
+        while file.readline() != "":
+            file.seek(seek_point)
+            contact = file.readline()[0:-1]
+            contact_list.append(contact)
+            seek_point += len(contact)+1
+        file.close()
+        for x in contact_list:
+            if x == "":
+                contact_list.remove(x)
+
+        return contact_list
+
+    def __save_list__(self, info_list):
+        save_data = ""
+        for x in info_list:
+            save_data += x + "\n"
+        file_path = os.path.join("docs", "Contacts.txt")
+        file = open(file_path, "r+")
+        file.truncate(0)
+        file.write(save_data)
+        file.close()
+
+    def __create__(self, ID, name, phone, cellphone, e_mail, pic):
+        new_contact = Contact(ID, name, phone, cellphone, e_mail, pic)
+        contact_list = self.__read__(self)
+        addition = new_contact.__save_contact__()
+        contact_list.append(addition)
+        self.__save_list__(self, contact_list)
+
+    def __contact_list__(self):
+        str_list = self.__read__(self)
+        contact_list = list()
+        for x in str_list:
+            data = ""
+            index = 0
+            contact = Contact("", "", "", "", "", "")
+            while x != "":
+                if x[0] == "/":
+                    if index == 0:
+                        contact.ID = data
+                    if index == 1:
+                        contact.name = data
+                    if index == 2:
+                        contact.phone = data
+                    if index == 3:
+                        contact.cellphone = data
+                    if index == 4:
+                        contact.e_mail = data
+                    if index == 5:
+                        contact.pic = data
+                        break
+                    data = ""
+                    index += 1
+                else:
+                    data += x[0]
+                x = x[1:]
+
+            contact_list.append(contact)
+
+        return contact_list
+
+class Contact:
+    def __init__(self, ID, name, phone, cellphone, e_mail, pic):
+        self.ID = ID
+        self.name = name
+        self.phone = phone
+        self.cellphone = cellphone
+        self.e_mail = e_mail
+        self.pic = pic
+
+    def __save_contact__(self):
+        saving_str = str(self.ID+"/"+self.name+"/"+self.phone+"/"+self.cellphone+"/"+self.e_mail+"/"+self.pic)
+        return saving_str
