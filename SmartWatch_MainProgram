@@ -1,0 +1,81 @@
+"""
+Instituto Tecnológico de Costa Rica
+Escuela de Ingeniería en Computadores
+
+II Semestre 2017 - Taller de Programación
+Prof. Jeff Schmidt Peralta
+I Proyecto - SmartWatch
+
+Víctor Ignacio Castrillo Muñoz
+Carnet: 2017110244
+
+Lenguaje de Programación: Python 3.4.2
+Interfaz: Tkinter 8.6.1
+"""
+
+### Libraries ###
+from tkinter import * # Interfaz gráfica
+import os, time, Contacts, Dairy
+
+### Load Images ###
+def LoadImg(img_name):
+    img_path = os.path.join("imgs", img_name)
+    image = PhotoImage(file=img_path)
+    return image
+
+### Constants ###
+Light_Blue = "#81BEF7"
+Orange = "#FAAC58"
+
+### Flags ###
+screen_flag = False
+
+### Main Window ###
+main_window = Tk()
+main_window.title("SmartWatch")
+main_window.minsize(400, 400)
+main_window.resizable(width=False, height=False)
+
+main_canvas = Canvas(main_window, width=396, height=396, bg="#81BEF7")
+main_canvas.place(x=0, y=0)
+
+watch_img = LoadImg("Watch.gif")
+background = Label(main_canvas, image=watch_img, bg="#FAFAFA")
+background.place(x=0, y=0)
+
+black_canvas = Canvas(main_window, width=245, height=172, bg="#000000")
+black_canvas.place(x=71, y=116)
+
+def Block_Screen():
+    global screen_flag
+    if not screen_flag:
+        screen_flag = True
+
+        screen = Canvas(main_window, width=245, height=172, bg="#FAFAFA")
+        screen.place(x=71, y=116)
+
+        iTEC_img = LoadImg("iTEC.gif")
+        iTEC = Label(screen, image=iTEC_img, bg="#FAFAFA")
+        iTEC.place(x=48.5, y=85)
+
+        logo_img = LoadImg("Logo.gif")
+        logo = Label(screen, image=logo_img, bg="#FAFAFA")
+        logo.place(x=90, y=20)
+
+        def Turn_Off():
+            global screen_flag
+            screen_flag = False
+            screen.destroy()
+
+        lock_img = LoadImg("Lock.gif")
+        unlock_button = Button(screen, image=lock_img, command=Turn_Off, width=30, height=30, bg="#FAFAFA")
+        unlock_button.place(x=215, y=69.5)
+
+        main_window.mainloop()
+
+on_off_img = LoadImg("On_Off.gif")
+on_off_button = Button(main_canvas, image=on_off_img, command=Block_Screen, width=30, height=30, bg="#FAFAFA")
+on_off_button.place(x=366, y=366)
+
+### Display Window ###
+main_window.mainloop()
