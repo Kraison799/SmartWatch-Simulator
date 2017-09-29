@@ -71,6 +71,23 @@ class Contact_List:
 
         return contact_list
 
+    def __delete__(self, info_list, delete_ID):
+        save_data = ""
+        for x in info_list:
+            if x[0] != delete_ID:
+                save_data += x + "\n"
+        file_path = os.path.join("docs", "Contacts.txt")
+        file = open(file_path, "r+")
+        file.truncate(0)
+        file.write(save_data)
+        file.close()
+
+    def __search__(self, searching_ID):
+        contact_list = self.__contact_list__(self)
+        for x in contact_list:
+            if x.ID == searching_ID:
+                return x
+
 class Contact:
     def __init__(self, ID, name, phone, cellphone, e_mail, pic):
         self.ID = ID
