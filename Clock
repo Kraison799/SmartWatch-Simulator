@@ -1,0 +1,22 @@
+### Libraries ###
+from time import localtime
+
+### Clock ###
+class Watch:
+    def __init__(self, time):
+        self.year = time[0]
+        self.month = time[1]
+        self.day = time[2]
+        self.hour = time[3]
+        self.minute = time[4]
+        self.second = time[5]
+
+    def __time__(self):
+        while True:
+            moment = localtime()
+            self.year = moment[0]
+            self.month = moment[1]
+            self.day = moment[2]
+            self.hour = moment[3]
+            self.minute = moment[4]
+            self.second = moment[5]
