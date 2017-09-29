@@ -1,0 +1,53 @@
+### Libraries ###
+
+import os
+
+### Dairy ###
+
+class Dairy:
+    def __read__(self):
+        file_path = os.path.join("docs", "Events.txt")
+        file = open(file_path, "r+")
+        event_list = []
+        seek_point = 0
+        while file.readline() != "":
+            file.seek(seek_point)
+            event = file.readline()[0:-1]
+            event_list.append(event)
+            seek_point += len(event)+1
+        file.close()
+        for x in event_list:
+            if x == "":
+                event_list.remove(x)
+
+        return event_list
+
+    def __save_list__(self, info_list):
+        save_data = ""
+        for x in info_list:
+            save_data += x + "\n"
+        file_path = os.path.join("docs", "Events.txt")
+        file = open(file_path, "r+")
+        file.truncate(0)
+        file.write(save_data)
+        file.close()
+
+    def __create__(self, ID, day, month, year, hour, event):
+        new_event = Event(ID, day, month, year, hour, event)
+        event_list = self.__read__(self)
+        addition = new_event.__save_event__()
+        event_list.append(addition)
+        self.__save_list__(self, event_list)
+
+class Event:
+    def __init__(self, ID, day, month, year, hour, event):
+        self.ID = ID
+        self.day = day
+        self.month = month
+        self.year = year
+        self.hour = hour
+        self.event = event
+
+    def __save_event__(self):
+        saving_str = str(self.ID+"/"+self.day+"/"+self.month+"/"+self.year+"/"+self.hour+"/"+self.event)
+        return saving_str
