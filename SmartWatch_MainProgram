@@ -15,7 +15,8 @@ Interfaz: Tkinter 8.6.1
 
 ### Libraries ###
 from tkinter import * # Interfaz gráfica
-import os, time, Contacts, Dairy
+from threading import Thread
+import os, time, Contacts, Dairy, Clock
 
 ### Load Images ###
 def LoadImg(img_name):
@@ -26,56 +27,116 @@ def LoadImg(img_name):
 ### Constants ###
 Light_Blue = "#81BEF7"
 Orange = "#FAAC58"
+White = "#FAFAFA"
+
+### Clock ###
+clock = Clock.Watch(time.localtime())
+clock_thread = Thread(target=clock.__time__)
 
 ### Flags ###
-screen_flag = False
+start_flag = False
+mm_flag = False
+
+password = "2614"
 
 ### Main Window ###
-main_window = Tk()
-main_window.title("SmartWatch")
-main_window.minsize(400, 400)
-main_window.resizable(width=False, height=False)
+def Main_Window():
+    global start_flag, mm_flag, clock
+    main_window = Tk()
+    main_window.title("SmartWatch")
+    main_window.minsize(400, 400)
+    main_window.resizable(width=False, height=False)
 
-main_canvas = Canvas(main_window, width=396, height=396, bg="#81BEF7")
-main_canvas.place(x=0, y=0)
+    main_canvas = Canvas(main_window, width=396, height=396, bg="#81BEF7")
+    main_canvas.place(x=0, y=0)
 
-watch_img = LoadImg("Watch.gif")
-background = Label(main_canvas, image=watch_img, bg="#FAFAFA")
-background.place(x=0, y=0)
+    watch_img = LoadImg("Watch.gif")
+    background = Label(main_canvas, image=watch_img, bg="#FAFAFA")
+    background.place(x=0, y=0)
 
-black_canvas = Canvas(main_window, width=245, height=172, bg="#000000")
-black_canvas.place(x=71, y=116)
+    black_canvas = Canvas(main_window, width=245, height=172, bg="#000000")
+    black_canvas.place(x=71, y=116)
 
-def Block_Screen():
-    global screen_flag
-    if not screen_flag:
-        screen_flag = True
+    def Main_Menu():
+        global mm_flag, clock
+        if mm_flag:
+            main_menu = Canvas(main_window, width=245, height=172, bg=Light_Blue)
+            main_menu.place(x=71, y=116)
 
-        screen = Canvas(main_window, width=245, height=172, bg="#FAFAFA")
-        screen.place(x=71, y=116)
+            main_menu.mainloop()
 
-        iTEC_img = LoadImg("iTEC.gif")
-        iTEC = Label(screen, image=iTEC_img, bg="#FAFAFA")
-        iTEC.place(x=48.5, y=85)
+    def Start_Screen():
+        global start_flag, mm_flag
+        if start_flag:
+            start_screen = Canvas(main_window, width=245, height=172, bg=White)
+            start_screen.place(x=71, y=116)
 
-        logo_img = LoadImg("Logo.gif")
-        logo = Label(screen, image=logo_img, bg="#FAFAFA")
-        logo.place(x=90, y=20)
+            iTEC_img = LoadImg("iTEC.gif")
+            iTEC = Label(start_screen, image=iTEC_img, bg=White)
+            iTEC.place(x=48.5, y=83)
+            logo_img = LoadImg("Logo.gif")
+            logo = Label(start_screen, image=logo_img, bg=White)
+            logo.place(x=90, y=20)
 
-        def Turn_Off():
-            global screen_flag
-            screen_flag = False
-            screen.destroy()
+            def Get_PIN():
+                global start_flag, mm_flag
+                pin_label = Label(start_screen, text="PIN", bg=White)
+                pin_label.place(x=20, y=10)
+                pin_entry = Entry(start_screen, width=8, bg="#FAFAFA")
+                pin_entry.place(x=50, y=10)
 
-        lock_img = LoadImg("Lock.gif")
-        unlock_button = Button(screen, image=lock_img, command=Turn_Off, width=30, height=30, bg="#FAFAFA")
-        unlock_button.place(x=215, y=69.5)
+                def Cancel():
+                    pin_label.destroy()
+                    pin_entry.destroy()
+                    pin_off.destroy()
+                    enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Orange)
+                    enter.place(x=221, y=3)
 
-        main_window.mainloop()
+                    start_screen.mainloop()
 
-on_off_img = LoadImg("On_Off.gif")
-on_off_button = Button(main_canvas, image=on_off_img, command=Block_Screen, width=30, height=30, bg="#FAFAFA")
-on_off_button.place(x=366, y=366)
+                return_img = LoadImg("Return_Icon.gif")
+                pin_off = Button(start_screen, image=return_img, command=Cancel, width=20, height=20, bg=Orange)
+                pin_off.place(x=221, y=43)
 
-### Display Window ###
-main_window.mainloop()
+                def Enter():
+                    global start_flag, mm_flag
+                    if pin_entry.get() == password:
+                        start_screen.destroy()
+                        start_flag = False
+                        mm_flag = True
+                        Main_Menu()
+                        return "Main_Menu"
+                    if not pin_entry.get() == password:
+                        print("PIN inválido")
+                        
+                enter_img = LoadImg("Enter_Icon.gif")
+                enter = Button(start_screen, image=enter_img, command=Enter, width=20, height=20, bg=Orange)
+                enter.place(x=221, y=3)
+
+                start_screen.mainloop()
+
+            enter_img = LoadImg("Enter_Icon.gif")
+            enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Orange)
+            enter.place(x=221, y=3)
+
+            start_screen.mainloop()
+
+    def Turn_On():
+        global start_flag, mm_flag
+        index = 0
+        if start_flag:
+            start_flag = False
+        start_flag = True
+        Start_Screen()
+
+    on_off_img = LoadImg("On_Off.gif")
+    on_off_button = Button(main_canvas, image=on_off_img, command=Turn_On, width=30, height=30, bg="#FAFAFA")
+    on_off_button.place(x=366, y=366)
+
+    ### Display Window ###
+    main_window.mainloop()
+
+main_thread = Thread(target=Main_Window)
+
+clock_thread.start()
+main_thread.start()
