@@ -28,20 +28,26 @@ def LoadImg(img_name):
 Light_Blue = "#81BEF7"
 Orange = "#FAAC58"
 White = "#FAFAFA"
+Dark_Blue = "#084B8A"
+Light_Green = "#9AFE2E"
 
 ### Clock ###
 clock = Clock.Watch(time.localtime())
-clock_thread = Thread(target=clock.__time__)
 
 ### Flags ###
+on_flag = False
 start_flag = False
 mm_flag = False
+contacts_flag = False
+game_flag = False
+
+thread_1_flag = False
 
 password = "2614"
 
 ### Main Window ###
 def Main_Window():
-    global start_flag, mm_flag, clock
+    global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, start_screen, main_menu, contacts_screen
     main_window = Tk()
     main_window.title("SmartWatch")
     main_window.minsize(400, 400)
@@ -57,16 +63,86 @@ def Main_Window():
     black_canvas = Canvas(main_window, width=245, height=172, bg="#000000")
     black_canvas.place(x=71, y=116)
 
+    def Contacts_Screen():
+        global mm_flag, contacts_flag, contacts_screen
+        if contacts_flag:
+            contacts_screen = Canvas(main_window, width=245, height=172, bg=White)
+            contacts_screen.place(x=71, y=116)
+
+            main_window.mainloop()
+
+    def Game_Screen():
+        global mm_flag, game_flag, game_screen
+        if game_flag:
+            game_screen = Canvas(main_window, width=245, height=172, bg=White)
+            game_screen.place(x=71, y=116)
+
+            main_window.mainloop()
+
     def Main_Menu():
-        global mm_flag, clock
+        global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, main_menu
+        clock_thread = Thread(target=clock.__time__)
+        clock_thread.start()
         if mm_flag:
-            main_menu = Canvas(main_window, width=245, height=172, bg=Light_Blue)
+            main_menu = Canvas(main_window, width=245, height=172, bg=White)
             main_menu.place(x=71, y=116)
+
+            def Clock_Label():
+                global thread_1_flag
+                while thread_1_flag:
+                    hour = ""
+                    if len(str(clock.hour)) == 2:
+                        hour += str(clock.hour)
+                    if len(str(clock.hour)) == 1:
+                        hour += "0" + str(clock.hour)
+                    if len(str(clock.minute)) == 2:
+                        hour += ":" + str(clock.minute)
+                    if len(str(clock.minute)) == 1:
+                        hour += ":0" + str(clock.minute)
+                    if len(str(clock.second)) == 2:
+                        hour += ":" +str(clock.second)
+                    if len(str(clock.second)) == 1:
+                        hour += ":0" + str(clock.second)
+                    clock_label = Label(main_menu, text=hour, font=("Haettenschweiler", 25), bg=White, fg=Dark_Blue)
+                    clock_label.place(x=20, y=10)
+                    time.sleep(1)
+                    clock_label.destroy()
+
+            hour_thread = Thread(target=Clock_Label)
+            hour_thread.start()
+
+            def To_Contacts():
+                global mm_flag, contacts_flag, thread_1_flag
+                mm_flag = False
+                contacts_flag = True
+                thread_1_flag = False
+                hour_thread._stop()
+                clock_thread._stop()
+                main_menu.destroy()
+                Contacts_Screen()
+
+            def To_Game():
+                global mm_flag, game_flag, thread_1_flag
+                mm_flag = False
+                game_flag = True
+                thread_1_flag = False
+                hour_thread._stop()
+                clock_thread._stop()
+                main_menu.destroy()
+                Game_Screen()
+
+            contacts_icon = LoadImg("Contacts_Icon.gif")
+            contacts_button = Button(main_menu, image=contacts_icon, width=25, height=25, command=To_Contacts, bg=Light_Blue)
+            contacts_button.place(x=195, y=120)
+
+            game_icon = LoadImg("Game_Icon.gif")
+            game_button = Button(main_menu, image=game_icon, width=25, height=25, command=To_Game, bg=Orange)
+            game_button.place(x=21.5, y=120)
 
             main_menu.mainloop()
 
     def Start_Screen():
-        global start_flag, mm_flag
+        global start_flag, mm_flag, thread_1_flag, start_screen
         if start_flag:
             start_screen = Canvas(main_window, width=245, height=172, bg=White)
             start_screen.place(x=71, y=116)
@@ -89,54 +165,68 @@ def Main_Window():
                     pin_label.destroy()
                     pin_entry.destroy()
                     pin_off.destroy()
-                    enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Orange)
+                    enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Dark_Blue)
                     enter.place(x=221, y=3)
 
                     start_screen.mainloop()
 
                 return_img = LoadImg("Return_Icon.gif")
-                pin_off = Button(start_screen, image=return_img, command=Cancel, width=20, height=20, bg=Orange)
+                pin_off = Button(start_screen, image=return_img, command=Cancel, width=20, height=20, bg=Dark_Blue)
                 pin_off.place(x=221, y=43)
 
                 def Enter():
-                    global start_flag, mm_flag
+                    global start_flag, mm_flag, thread_1_flag
                     if pin_entry.get() == password:
                         start_screen.destroy()
                         start_flag = False
                         mm_flag = True
+                        thread_1_flag = True
                         Main_Menu()
                         return "Main_Menu"
                     if not pin_entry.get() == password:
                         print("PIN inválido")
                         
                 enter_img = LoadImg("Enter_Icon.gif")
-                enter = Button(start_screen, image=enter_img, command=Enter, width=20, height=20, bg=Orange)
+                enter = Button(start_screen, image=enter_img, command=Enter, width=20, height=20, bg=Dark_Blue)
                 enter.place(x=221, y=3)
 
                 start_screen.mainloop()
 
             enter_img = LoadImg("Enter_Icon.gif")
-            enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Orange)
+            enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Dark_Blue)
             enter.place(x=221, y=3)
 
             start_screen.mainloop()
 
-    def Turn_On():
-        global start_flag, mm_flag
-        index = 0
-        if start_flag:
-            start_flag = False
-        start_flag = True
-        Start_Screen()
+    def Turn_():
+        global on_flag, start_flag, mm_flag, contacts_flag, game_flag, thread_1_flag, start_screen, main_menu, contacts_screen, game_screen
+        if not on_flag:
+            on_flag = True
+            start_flag = True
+            Start_Screen()
+        if on_flag:
+            on_flag = False
+            if start_flag:
+                start_flag = False
+                start_screen.destroy()
+            if mm_flag:
+                mm_flag = False
+                main_menu.destroy()
+            if contacts_flag:
+                contacts_flag = False
+                contacts_screen.destroy()
+            if game_flag:
+                game_flag = False
+                game_screen.destroy()
+            thread_1_flag = False
+            
 
     on_off_img = LoadImg("On_Off.gif")
-    on_off_button = Button(main_canvas, image=on_off_img, command=Turn_On, width=30, height=30, bg="#FAFAFA")
+    on_off_button = Button(main_canvas, image=on_off_img, command=Turn_, width=30, height=30, bg="#FAFAFA")
     on_off_button.place(x=366, y=366)
 
     ### Display Window ###
     main_window.mainloop()
 
 main_thread = Thread(target=Main_Window)
-
-clock_thread.start()
 main_thread.start()
