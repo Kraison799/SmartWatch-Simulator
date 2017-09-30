@@ -30,6 +30,9 @@ Orange = "#FAAC58"
 White = "#FAFAFA"
 Dark_Blue = "#084B8A"
 Light_Green = "#9AFE2E"
+Light_Red = "#FE2E2E"
+
+pin_attempts = 3
 
 ### Clock ###
 clock = Clock.Watch(time.localtime())
@@ -42,12 +45,14 @@ contacts_flag = False
 game_flag = False
 
 thread_1_flag = False
+thread_2_flag = False
 
+english = True
 password = "2614"
 
 ### Main Window ###
 def Main_Window():
-    global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, start_screen, main_menu, contacts_screen
+    global on_flag, start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen
     main_window = Tk()
     main_window.title("SmartWatch")
     main_window.minsize(400, 400)
@@ -64,24 +69,66 @@ def Main_Window():
     black_canvas.place(x=71, y=116)
 
     def Contacts_Screen():
-        global mm_flag, contacts_flag, contacts_screen
+        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag
         if contacts_flag:
             contacts_screen = Canvas(main_window, width=245, height=172, bg=White)
             contacts_screen.place(x=71, y=116)
 
+            if english:
+                ID_info = Label(contacts_screen, text="ID", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
+                name_info = Label(contacts_screen, text="Name", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
+            if not english:
+                ID_info = Label(contacts_screen, text="ID", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
+                name_info = Label(contacts_screen, text="Nombre", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
+            ID_info.place(x=20, y=5)
+            name_info.place(x=50, y=5)
+
+            contacts = Contacts.Contact_List
+            for contact in contacts.__contact_list__(contacts):
+                ID_label = Label(contacts_screen, text=contact.ID, font=("Haettenschweiler", 13), bg=White, fg=Light_Blue)
+                name_label = Label(contacts_screen, text=contact.name, font=("Haettenschweiler", 13), bg=White, fg=Light_Blue)
+                ID_label.place(x=20, y=35+21*(int(contact.ID)-1))
+                name_label.place(x=50, y=35+21*(int(contact.ID)-1))
+
+            def To_Main_Menu():
+                global mm_flag, contacts_flag, thread_1_flag, thread_2_flag
+                mm_flag = True
+                contacts_flag = False
+                thread_1_flag = True
+                thread_2_flag = True
+                contacts_screen.destroy()
+                Main_Menu()
+
+            return_img = LoadImg("Return_Icon.gif")
+            return_button = Button(contacts_screen, image=return_img, command=To_Main_Menu, width=20, height=20, bg=Light_Red)
+            return_button.place(x=221, y=3)
+
             main_window.mainloop()
 
     def Game_Screen():
-        global mm_flag, game_flag, game_screen
+        global mm_flag, game_flag, game_screen, thread_1_flag, thread_2_flag
         if game_flag:
             game_screen = Canvas(main_window, width=245, height=172, bg=White)
             game_screen.place(x=71, y=116)
 
+            def To_Main_Menu():
+                global mm_flag, game_flag, thread_1_flag, thread_2_flag
+                mm_flag = True
+                game_flag = False
+                thread_1_flag = True
+                thread_2_flag = True
+                game_screen.destroy()
+                Main_Menu()
+
             main_window.mainloop()
 
     def Main_Menu():
-        global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, main_menu
-        clock_thread = Thread(target=clock.__time__)
+        global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, main_menu
+        def Clock_Thread():
+            global thread_2_flag
+            while thread_2_flag:
+                clock.__time__()
+        clock_thread = Thread(target=Clock_Thread)
         clock_thread.start()
         if mm_flag:
             main_menu = Canvas(main_window, width=245, height=172, bg=White)
@@ -112,20 +159,22 @@ def Main_Window():
             hour_thread.start()
 
             def To_Contacts():
-                global mm_flag, contacts_flag, thread_1_flag
+                global mm_flag, contacts_flag, thread_1_flag, thread_2_flag
                 mm_flag = False
                 contacts_flag = True
                 thread_1_flag = False
+                thread_2_flag = False
                 hour_thread._stop()
                 clock_thread._stop()
                 main_menu.destroy()
                 Contacts_Screen()
 
             def To_Game():
-                global mm_flag, game_flag, thread_1_flag
+                global mm_flag, game_flag, thread_1_flag, thread_2_flag
                 mm_flag = False
                 game_flag = True
                 thread_1_flag = False
+                thread_2_flag = False
                 hour_thread._stop()
                 clock_thread._stop()
                 main_menu.destroy()
@@ -142,7 +191,7 @@ def Main_Window():
             main_menu.mainloop()
 
     def Start_Screen():
-        global start_flag, mm_flag, thread_1_flag, start_screen
+        global on_flag, start_flag, mm_flag, thread_1_flag, thread_2_flag, start_screen, pin_attempts
         if start_flag:
             start_screen = Canvas(main_window, width=245, height=172, bg=White)
             start_screen.place(x=71, y=116)
@@ -155,54 +204,73 @@ def Main_Window():
             logo.place(x=90, y=20)
 
             def Get_PIN():
-                global start_flag, mm_flag
-                pin_label = Label(start_screen, text="PIN", bg=White)
-                pin_label.place(x=20, y=10)
+                global on_flag, start_flag, mm_flag, pin_attempts
+                pin_label = Label(start_screen, text="PIN", font=("Haettenschweiler", 15), bg=White)
+                pin_label.place(x=17, y=4)
                 pin_entry = Entry(start_screen, width=8, bg="#FAFAFA")
                 pin_entry.place(x=50, y=10)
 
-                def Cancel():
-                    pin_label.destroy()
-                    pin_entry.destroy()
-                    pin_off.destroy()
-                    enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Dark_Blue)
-                    enter.place(x=221, y=3)
-
-                    start_screen.mainloop()
-
-                return_img = LoadImg("Return_Icon.gif")
-                pin_off = Button(start_screen, image=return_img, command=Cancel, width=20, height=20, bg=Dark_Blue)
-                pin_off.place(x=221, y=43)
-
                 def Enter():
-                    global start_flag, mm_flag, thread_1_flag
+                    global on_flag, start_flag, mm_flag, thread_1_flag, thread_2_flag, pin_attempts, attempts_label
                     if pin_entry.get() == password:
                         start_screen.destroy()
                         start_flag = False
                         mm_flag = True
                         thread_1_flag = True
+                        thread_2_flag = True
                         Main_Menu()
                         return "Main_Menu"
-                    if not pin_entry.get() == password:
-                        print("PIN inválido")
+                    if pin_entry.get() != password and pin_attempts != 0:
+                        if english:
+                            if pin_attempts != 3:
+                                attempts_label.destroy()
+                            pin_attempts -= 1
+                            attempts_label = Label(start_screen, text=("Attempts left: " + str(pin_attempts)), font=("Haettenschweiler", 11), bg=White, fg=Light_Red)
+                            attempts_label.place(x=110, y=6)
+                        if not english:
+                            if pin_attempts != 3:
+                                attempts_label.destroy()
+                            pin_attempts -= 1
+                            attempts_label = Label(start_screen, text=("Intentos restantes: " + str(pin_attempts)), font=("Haettenschweiler", 11), bg=White, fg=Light_Red)
+                            attempts_label.place(x=110, y=6)
+                    if pin_entry.get() != password and pin_attempts == 0:
+                        start_flag = False
+                        on_flag = False
+                        start_screen.destroy()
+
+                def Cancel():
+                    pin_label.destroy()
+                    pin_entry.destroy()
+                    pin_off.destroy()
+                    if pin_attempts != 3:
+                        attempts_label.destroy()
+                    enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Light_Blue)
+                    enter.place(x=221, y=3)
+
+                    start_screen.mainloop()
+
+                return_img = LoadImg("Return_Icon.gif")
+                pin_off = Button(start_screen, image=return_img, command=Cancel, width=20, height=20, bg=Light_Red)
+                pin_off.place(x=221, y=43)
                         
                 enter_img = LoadImg("Enter_Icon.gif")
-                enter = Button(start_screen, image=enter_img, command=Enter, width=20, height=20, bg=Dark_Blue)
+                enter = Button(start_screen, image=enter_img, command=Enter, width=20, height=20, bg=Light_Blue)
                 enter.place(x=221, y=3)
 
                 start_screen.mainloop()
 
             enter_img = LoadImg("Enter_Icon.gif")
-            enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Dark_Blue)
+            enter = Button(start_screen, image=enter_img, command=Get_PIN, width=20, height=20, bg=Light_Blue)
             enter.place(x=221, y=3)
 
             start_screen.mainloop()
 
     def Turn_():
-        global on_flag, start_flag, mm_flag, contacts_flag, game_flag, thread_1_flag, start_screen, main_menu, contacts_screen, game_screen
+        global on_flag, start_flag, mm_flag, contacts_flag, game_flag, thread_1_flag, pin_attempts, start_screen, main_menu, contacts_screen, game_screen
         if not on_flag:
             on_flag = True
             start_flag = True
+            pin_attempts = 3
             Start_Screen()
         if on_flag:
             on_flag = False
