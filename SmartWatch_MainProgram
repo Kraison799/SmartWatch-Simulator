@@ -14,63 +14,76 @@ Interfaz: Tkinter 8.6.1
 """
 
 ### Libraries ###
-from tkinter import * # Interfaz gráfica
+from tkinter import *
 from threading import Thread
-import os, time, Contacts, Dairy, Clock
+import os, time, random, Contacts, Calendar, Clock
 
 ### Load Images ###
+# function used to get images path
 def LoadImg(img_name):
     img_path = os.path.join("imgs", img_name)
     image = PhotoImage(file=img_path)
     return image
 
 ### Constants ###
+# colors used in the program
 Light_Blue = "#81BEF7"
 Orange = "#FAAC58"
 White = "#FAFAFA"
 Dark_Blue = "#084B8A"
 Light_Green = "#9AFE2E"
 Light_Red = "#FE2E2E"
+Purple = "#642EFE"
 
-pin_attempts = 3
+Colors = [Light_Blue, Orange, Dark_Blue, Light_Green, Light_Red, Purple]
 
 ### Clock ###
 clock = Clock.Watch(time.localtime())
 
 ### Flags ###
+# for determinating current screen
 on_flag = False
 start_flag = False
 mm_flag = False
 contacts_flag = False
+calendar_flag = False
 game_flag = False
 
+# for control of the threads
 thread_1_flag = False
 thread_2_flag = False
 
-english = True
-password = "2614"
+# language and password
+english = True # True: english / False: spanish
+password = "7052" # pin code
 
 ### Main Window ###
+# main window of the program that shows the watch with its screen
 def Main_Window():
-    global on_flag, start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen
+    global on_flag, start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen, english
+    # basic definitions of the main window (size, name, canvas)
     main_window = Tk()
     main_window.title("SmartWatch")
     main_window.minsize(400, 400)
     main_window.resizable(width=False, height=False)
 
-    main_canvas = Canvas(main_window, width=396, height=396, bg="#81BEF7")
+    main_canvas = Canvas(main_window, width=396, height=396, bg=White)
     main_canvas.place(x=0, y=0)
 
+    # background image
     watch_img = LoadImg("Watch.gif")
-    background = Label(main_canvas, image=watch_img, bg="#FAFAFA")
+    background = Label(main_canvas, image=watch_img, bg=White)
     background.place(x=0, y=0)
 
+    # turned off screen
     black_canvas = Canvas(main_window, width=245, height=172, bg="#000000")
     black_canvas.place(x=71, y=116)
 
+    # function for the contacts screen
     def Contacts_Screen():
-        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag
+        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag, english
         if contacts_flag:
+            # definition of the contacts screen
             contacts_screen = Canvas(main_window, width=245, height=172, bg=White)
             contacts_screen.place(x=71, y=116)
 
@@ -99,14 +112,89 @@ def Main_Window():
                 contacts_screen.destroy()
                 Main_Menu()
 
+            if english:
+                searching_info = Label(contacts_screen, text="Search", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
+            if not english:
+                searching_info = Label(contacts_screen, text="Buscar", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
+            searching_info.place(x=125, y=5)
+            searching_entry = Entry(contacts_screen, width=8, bg=White)
+            searching_entry.place(x=125, y=50)
+
+            def Show_Contact():
+                contact_info = Canvas(main_window, width=245, height=172, bg=White)
+                contact_info.place(x=71, y=116)
+
+                if searching_entry.get() != "":
+                    showing_data = contacts.__search__(contacts, searching_entry.get())
+
+                    color = random.choice(Colors)
+
+                    name = Label(contact_info, text=showing_data.name, font=("Haettenschweiler", 20), bg=White, fg=color)
+                    name.place(x=75,y=8.5)
+                    if showing_data.cellphone != "":
+                        cellphone = Label(contact_info, text=showing_data.cellphone, font=("Haettenschweiler", 17), bg=White, fg=color)
+                        cellphone.place(x=75, y=40)
+                        if showing_data.phone != "":
+                            phone = Label(contact_info, text=showing_data.phone, font=("Haettenschweiler", 17), bg=White, fg=color)
+                            phone.place(x=160, y=40)
+                    if showing_data.cellphone == "" and showing_data.phone != "":
+                        phone = Label(contact_info, text=showing_data.phone, font=("Haettenschweiler", 17), bg=White, fg=color)
+                        phone.place(x=75, y=40)
+                    if showing_data.pic != "":
+                        photo = LoadImg(showing_data.pic)
+                        photo_label = Label(contact_info, image=photo, bg=White)
+                        photo_label.place(x=10, y=10)
+                    if showing_data.e_mail != "":
+                        e_mail = Label(contact_info, text=showing_data.e_mail, font=("Haettenschweiler", 17), bg=White, fg=color)
+                        e_mail.place(x=10, y=77.5)
+
+                    if english:
+                        edit_text = Label(contact_info, text="New Information", font=("Haettenschweiler", 13), bg=White, fg=color)
+                        edit_text.place(x=5, y=114)
+                    if not english:
+                        edit_text = Label(contact_info, text="Nueva Información", font=("Haettenschweiler", 13), bg=White, fg=color)
+                        edit_text.place(x=5, y=114)
+                    edit_info = Entry(contact_info, width=10, bg=White)
+                    edit_info.place(x=115, y=118)
+
+                back_button = Button(contact_info, image=return_img, command=contact_info.destroy, width=20, height=20, bg=Light_Red)
+                back_button.place(x=221, y=148.5)
+
+                main_window.mainloop()
+
+            search_img = LoadImg("Search_Icon.gif")
+            searching_ID_button = Button(contacts_screen, image=search_img, command=Show_Contact, width=25, height=25, bg=Light_Blue)
+            searching_ID_button.place(x=134.5, y=70)
+
             return_img = LoadImg("Return_Icon.gif")
             return_button = Button(contacts_screen, image=return_img, command=To_Main_Menu, width=20, height=20, bg=Light_Red)
             return_button.place(x=221, y=3)
 
             main_window.mainloop()
 
+    def Calendar_Screen():
+        global mm_flag, calendar_flag, calendar_screen, thread_1_flag, thread_2_flag, english
+        if calendar_flag:
+            calendar_screen = Canvas(main_window, width=245, height=172, bg=White)
+            calendar_screen.place(x=71, y=116)
+
+            def To_Main_Menu():
+                global mm_flag, calendar_flag, thread_1_flag, thread_2_flag
+                mm_flag = True
+                calendar_flag = False
+                thread_1_flag = True
+                thread_2_flag = True
+                calendar_screen.destroy()
+                Main_Menu()
+
+            return_img = LoadImg("Return_Icon.gif")
+            return_button = Button(calendar_screen, image=return_img, command=To_Main_Menu, width=20, height=20, bg=Light_Red)
+            return_button.place(x=221, y=3)
+
+            main_window.mainloop()
+
     def Game_Screen():
-        global mm_flag, game_flag, game_screen, thread_1_flag, thread_2_flag
+        global mm_flag, game_flag, game_screen, thread_1_flag, thread_2_flag, english
         if game_flag:
             game_screen = Canvas(main_window, width=245, height=172, bg=White)
             game_screen.place(x=71, y=116)
@@ -120,16 +208,22 @@ def Main_Window():
                 game_screen.destroy()
                 Main_Menu()
 
+            return_img = LoadImg("Return_Icon.gif")
+            return_button = Button(game_screen, image=return_img, command=To_Main_Menu, width=20, height=20, bg=Light_Red)
+            return_button.place(x=221, y=3)
+
             main_window.mainloop()
 
     def Main_Menu():
-        global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, main_menu
+        global start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, main_menu, english
         def Clock_Thread():
             global thread_2_flag
             while thread_2_flag:
                 clock.__time__()
+                time.sleep(1)
         clock_thread = Thread(target=Clock_Thread)
         clock_thread.start()
+
         if mm_flag:
             main_menu = Canvas(main_window, width=245, height=172, bg=White)
             main_menu.place(x=71, y=116)
@@ -164,10 +258,17 @@ def Main_Window():
                 contacts_flag = True
                 thread_1_flag = False
                 thread_2_flag = False
-                hour_thread._stop()
-                clock_thread._stop()
                 main_menu.destroy()
                 Contacts_Screen()
+
+            def To_Calendar():
+                global mm_flag, calendar_flag, thread_1_flag, thread_2_flag
+                mm_flag = False
+                calendar_flag = True
+                thread_1_flag = False
+                thread_2_flag = False
+                main_menu.destroy()
+                Calendar_Screen()
 
             def To_Game():
                 global mm_flag, game_flag, thread_1_flag, thread_2_flag
@@ -175,8 +276,6 @@ def Main_Window():
                 game_flag = True
                 thread_1_flag = False
                 thread_2_flag = False
-                hour_thread._stop()
-                clock_thread._stop()
                 main_menu.destroy()
                 Game_Screen()
 
@@ -184,14 +283,18 @@ def Main_Window():
             contacts_button = Button(main_menu, image=contacts_icon, width=25, height=25, command=To_Contacts, bg=Light_Blue)
             contacts_button.place(x=195, y=120)
 
+            calendar_icon = LoadImg("Calendar_Icon.gif")
+            calendar_button = Button(main_menu, image=calendar_icon, width=25, height=25, command=To_Calendar, bg=Orange)
+            calendar_button.place(x=80, y=120)
+
             game_icon = LoadImg("Game_Icon.gif")
-            game_button = Button(main_menu, image=game_icon, width=25, height=25, command=To_Game, bg=Orange)
+            game_button = Button(main_menu, image=game_icon, width=25, height=25, command=To_Game, bg=Purple)
             game_button.place(x=21.5, y=120)
 
             main_menu.mainloop()
 
     def Start_Screen():
-        global on_flag, start_flag, mm_flag, thread_1_flag, thread_2_flag, start_screen, pin_attempts
+        global on_flag, start_flag, mm_flag, thread_1_flag, thread_2_flag, start_screen, pin_attempts, english
         if start_flag:
             start_screen = Canvas(main_window, width=245, height=172, bg=White)
             start_screen.place(x=71, y=116)
@@ -207,7 +310,7 @@ def Main_Window():
                 global on_flag, start_flag, mm_flag, pin_attempts
                 pin_label = Label(start_screen, text="PIN", font=("Haettenschweiler", 15), bg=White)
                 pin_label.place(x=17, y=4)
-                pin_entry = Entry(start_screen, width=8, bg="#FAFAFA")
+                pin_entry = Entry(start_screen, width=5, bg="#FAFAFA")
                 pin_entry.place(x=50, y=10)
 
                 def Enter():
@@ -219,7 +322,6 @@ def Main_Window():
                         thread_1_flag = True
                         thread_2_flag = True
                         Main_Menu()
-                        return "Main_Menu"
                     if pin_entry.get() != password and pin_attempts != 0:
                         if english:
                             if pin_attempts != 3:
@@ -266,7 +368,7 @@ def Main_Window():
             start_screen.mainloop()
 
     def Turn_():
-        global on_flag, start_flag, mm_flag, contacts_flag, game_flag, thread_1_flag, pin_attempts, start_screen, main_menu, contacts_screen, game_screen
+        global on_flag, start_flag, mm_flag, contacts_flag, calendar_flag, game_flag, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen, calendar_screen, game_screen, english
         if not on_flag:
             on_flag = True
             start_flag = True
@@ -283,18 +385,20 @@ def Main_Window():
             if contacts_flag:
                 contacts_flag = False
                 contacts_screen.destroy()
+            if calendar_flag:
+                calendar_flag = False
+                calendar_screen.destroy()
             if game_flag:
                 game_flag = False
                 game_screen.destroy()
             thread_1_flag = False
-            
+            thread_2_flag = False
 
+    # button to turn on/off the watch
     on_off_img = LoadImg("On_Off.gif")
     on_off_button = Button(main_canvas, image=on_off_img, command=Turn_, width=30, height=30, bg="#FAFAFA")
     on_off_button.place(x=366, y=366)
 
-    ### Display Window ###
     main_window.mainloop()
 
-main_thread = Thread(target=Main_Window)
-main_thread.start()
+Main_Window()
