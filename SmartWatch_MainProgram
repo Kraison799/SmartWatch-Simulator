@@ -27,15 +27,16 @@ def LoadImg(img_name):
 
 ### Constants ###
 # colors used in the program
+White = "#FAFAFA"
+Black = "#000000"
 Light_Blue = "#81BEF7"
 Orange = "#FAAC58"
-White = "#FAFAFA"
 Dark_Blue = "#084B8A"
 Light_Green = "#9AFE2E"
 Light_Red = "#FE2E2E"
 Purple = "#642EFE"
 
-Colors = [Light_Blue, Orange, Dark_Blue, Light_Green, Light_Red, Purple]
+Colors = [Light_Blue, Orange, Dark_Blue, Light_Green, Purple]
 
 ### Clock ###
 clock = Clock.Watch(time.localtime())
@@ -76,12 +77,20 @@ def Main_Window():
     background.place(x=0, y=0)
 
     # turned off screen
-    black_canvas = Canvas(main_window, width=245, height=172, bg="#000000")
+    black_canvas = Canvas(main_window, width=245, height=172, bg=Black)
     black_canvas.place(x=71, y=116)
+
+    # function for the block screen (empty)
+    def Block_Screen():
+        global block_flag
+        block_screen = Canvas(main_window, width=245, height=172, bg=Purple)
+        block_screen.place(x=71, y=116)
+
+        main_window.mainloop()
 
     # function for the contacts screen
     def Contacts_Screen():
-        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag, english
+        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag, english, index_contact, index_screen
         if contacts_flag:
             # definition of the contacts screen
             contacts_screen = Canvas(main_window, width=245, height=172, bg=White)
@@ -97,11 +106,44 @@ def Main_Window():
             name_info.place(x=50, y=5)
 
             contacts = Contacts.Contact_List
-            for contact in contacts.__contact_list__(contacts):
-                ID_label = Label(contacts_screen, text=contact.ID, font=("Haettenschweiler", 13), bg=White, fg=Light_Blue)
-                name_label = Label(contacts_screen, text=contact.name, font=("Haettenschweiler", 13), bg=White, fg=Light_Blue)
-                ID_label.place(x=20, y=35+21*(int(contact.ID)-1))
-                name_label.place(x=50, y=35+21*(int(contact.ID)-1))
+            index_screen = 1
+
+            def Print_Label():
+                global label_list, index_screen, index_contact
+                label_list = []
+                index_contact = 0
+                for contact in contacts.__contact_list__(contacts):
+                    if (index_screen-1)*6 <= index_contact < index_screen*6:
+                        ID_label = Label(contacts_screen, text=contact.ID, font=("Haettenschweiler", 13), bg=White, fg=Light_Blue)
+                        name_label = Label(contacts_screen, text=contact.name, font=("Haettenschweiler", 13), bg=White, fg=Light_Blue)
+                        ID_label.place(x=20, y=35+21*(index_contact-(index_screen-1)*6))
+                        name_label.place(x=50, y=35+21*(index_contact-(index_screen-1)*6))
+                        label_list.append(ID_label)
+                        label_list.append(name_label)
+                    index_contact += 1
+
+            Print_Label()
+
+            def Previous():
+                global label_list, index_screen, index_contact
+                for x in label_list:
+                    x.destroy()
+                label_list = []
+                index_screen -= 1
+                Print_Label()
+
+            def Next():
+                global label_list, index_screen, index_contact
+                for x in label_list:
+                    x.destroy()
+                label_list = []
+                index_screen += 1
+                Print_Label()
+
+            previous_button = Button(contacts_screen, text="<-", command=Previous, bg=Light_Blue)
+            previous_button.place(x=130, y=105)
+            next_button = Button(contacts_screen, text="->", command=Next, bg=Light_Blue)
+            next_button.place(x=130, y=130)
 
             def To_Main_Menu():
                 global mm_flag, contacts_flag, thread_1_flag, thread_2_flag
@@ -116,55 +158,102 @@ def Main_Window():
                 searching_info = Label(contacts_screen, text="Search", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
             if not english:
                 searching_info = Label(contacts_screen, text="Buscar", font=("Haettenschweiler", 15), bg=White, fg=Dark_Blue)
-            searching_info.place(x=125, y=5)
+            searching_info.place(x=165, y=5)
             searching_entry = Entry(contacts_screen, width=8, bg=White)
-            searching_entry.place(x=125, y=50)
+            searching_entry.place(x=165, y=50)
 
             def Show_Contact():
                 contact_info = Canvas(main_window, width=245, height=172, bg=White)
                 contact_info.place(x=71, y=116)
 
-                if searching_entry.get() != "":
-                    showing_data = contacts.__search__(contacts, searching_entry.get())
+                try:
+                    if searching_entry.get() != "":
+                        showing_data = contacts.__search__(contacts, searching_entry.get())
 
-                    color = random.choice(Colors)
+                        color = random.choice(Colors)
 
-                    name = Label(contact_info, text=showing_data.name, font=("Haettenschweiler", 20), bg=White, fg=color)
-                    name.place(x=75,y=8.5)
-                    if showing_data.cellphone != "":
-                        cellphone = Label(contact_info, text=showing_data.cellphone, font=("Haettenschweiler", 17), bg=White, fg=color)
-                        cellphone.place(x=75, y=40)
-                        if showing_data.phone != "":
+                        name = Label(contact_info, text=showing_data.name, font=("Haettenschweiler", 20), bg=White, fg=color)
+                        name.place(x=75,y=8.5)
+                        if showing_data.cellphone != "":
+                            cellphone = Label(contact_info, text=showing_data.cellphone, font=("Haettenschweiler", 17), bg=White, fg=color)
+                            cellphone.place(x=75, y=40)
+                            if showing_data.phone != "":
+                                phone = Label(contact_info, text=showing_data.phone, font=("Haettenschweiler", 17), bg=White, fg=color)
+                                phone.place(x=160, y=40)
+                        if showing_data.cellphone == "" and showing_data.phone != "":
                             phone = Label(contact_info, text=showing_data.phone, font=("Haettenschweiler", 17), bg=White, fg=color)
-                            phone.place(x=160, y=40)
-                    if showing_data.cellphone == "" and showing_data.phone != "":
-                        phone = Label(contact_info, text=showing_data.phone, font=("Haettenschweiler", 17), bg=White, fg=color)
-                        phone.place(x=75, y=40)
-                    if showing_data.pic != "":
-                        photo = LoadImg(showing_data.pic)
-                        photo_label = Label(contact_info, image=photo, bg=White)
-                        photo_label.place(x=10, y=10)
-                    if showing_data.e_mail != "":
-                        e_mail = Label(contact_info, text=showing_data.e_mail, font=("Haettenschweiler", 17), bg=White, fg=color)
-                        e_mail.place(x=10, y=77.5)
+                            phone.place(x=75, y=40)
+                        if showing_data.pic == "":
+                            profile_icon = LoadImg("Profile_Icon.gif")
+                            profile_pic = Label(contact_info, image=profile_icon, bg=color)
+                            profile_pic.place(x=10, y=10)
+                        if showing_data.pic != "":
+                            photo = LoadImg(showing_data.pic)
+                            photo_label = Label(contact_info, image=photo, bg=White)
+                            photo_label.place(x=10, y=10)
+                        if showing_data.e_mail != "":
+                            e_mail = Label(contact_info, text=showing_data.e_mail, font=("Haettenschweiler", 17), bg=White, fg=color)
+                            e_mail.place(x=10, y=77.5)
 
-                    if english:
-                        edit_text = Label(contact_info, text="New Information", font=("Haettenschweiler", 13), bg=White, fg=color)
-                        edit_text.place(x=5, y=114)
-                    if not english:
-                        edit_text = Label(contact_info, text="Nueva Información", font=("Haettenschweiler", 13), bg=White, fg=color)
-                        edit_text.place(x=5, y=114)
-                    edit_info = Entry(contact_info, width=10, bg=White)
-                    edit_info.place(x=115, y=118)
+                        def Edit():
+                            global english
+                            edit_screen = Canvas(main_window, width=245, height=172, bg=White)
+                            edit_screen.place(x=71, y=116)
 
-                back_button = Button(contact_info, image=return_img, command=contact_info.destroy, width=20, height=20, bg=Light_Red)
-                back_button.place(x=221, y=148.5)
+                            ID_entry = Entry(edit_screen, width=8, bg=White)
+                            ID_entry.place(x=67, y=27)
+                            name_entry = Entry(edit_screen, width=8, bg=White)
+                            name_entry.place(x=67, y=52)
+                            phone_entry = Entry(edit_screen, width=8, bg=White)
+                            phone_entry.place(x=67, y=77)
+                            cellphone_entry = Entry(edit_screen, width=8, bg=White)
+                            cellphone_entry.place(x=67, y=102)
+                            e_mail_entry = Entry(edit_screen, width=8, bg=White)
+                            e_mail_entry.place(x=67, y=127)
+                            pic_entry = Entry(edit_screen, width=8, bg=White)
+                            pic_entry.place(x=67, y=152)
 
-                main_window.mainloop()
+                            ID_label = Label(edit_screen, text="ID", font=("Haettenschweiler", 14), bg=White)
+                            if english:
+                                name_label = Label(edit_screen, text="Name", font=("Haettenschweiler", 14), bg=White)
+                                phone_label = Label(edit_screen, text="Phone", font=("Haettenschweiler", 14), bg=White)
+                                cellphone_label = Label(edit_screen, text="Cellphone", font=("Haettenschweiler", 14), bg=White)
+                                e_mail_label = Label(edit_screen, text="E-mail", font=("Haettenschweiler", 14), bg=White)
+                                pic_label = Label(edit_screen, text="Picture", font=("Haettenschweiler", 14), bg=White)
+                            ID_label.place(x=28, y=24)
+                            name_label.place(x=16, y=49)
+                            phone_label.place(x=14, y=74)
+                            cellphone_label.place(x=5, y=99)
+                            e_mail_label.place(x=14.5, y=124)
+                            pic_label.place(x=9, y=149)
+
+                            back_button = Button(edit_screen, image=return_img, command=edit_screen.destroy, width=20, height=20, bg=Light_Red)
+                            back_button.place(x=221, y=148.5)
+
+                            main_window.mainloop()
+
+                        def Delete():
+                            contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+
+                        edit_icon = LoadImg("Edit_Icon.gif")
+                        edit_button = Button(contact_info, image=edit_icon, command=Edit, width=20, height=20, bg=color)
+                        edit_button.place(x=35, y=140)
+
+                        delete_icon = LoadImg("Erase_Icon.gif")
+                        delete_button = Button(contact_info, image=delete_icon, command=Delete, width=20, height=20, bg=color)
+                        delete_button.place(x=70, y=140)
+
+                    back_button = Button(contact_info, image=return_img, command=contact_info.destroy, width=20, height=20, bg=Light_Red)
+                    back_button.place(x=221, y=148.5)
+
+                    main_window.mainloop()
+
+                except:
+                    contact_info.destroy()
 
             search_img = LoadImg("Search_Icon.gif")
             searching_ID_button = Button(contacts_screen, image=search_img, command=Show_Contact, width=25, height=25, bg=Light_Blue)
-            searching_ID_button.place(x=134.5, y=70)
+            searching_ID_button.place(x=174.5, y=70)
 
             return_img = LoadImg("Return_Icon.gif")
             return_button = Button(contacts_screen, image=return_img, command=To_Main_Menu, width=20, height=20, bg=Light_Red)
