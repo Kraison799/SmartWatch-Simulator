@@ -47,6 +47,8 @@ on_flag = False
 start_flag = False
 mm_flag = False
 contacts_flag = False
+contact_flag = False
+new_contact_flag = False
 calendar_flag = False
 game_flag = False
 
@@ -55,7 +57,7 @@ thread_1_flag = False
 thread_2_flag = False
 
 # language and password
-english = True # True: english / False: spanish
+english = False # True: english / False: spanish
 password = "7052" # pin code
 
 ### Main Window ###
@@ -126,23 +128,27 @@ def Main_Window():
 
             def Previous():
                 global label_list, index_screen, index_contact
-                for x in label_list:
-                    x.destroy()
-                label_list = []
-                index_screen -= 1
-                Print_Label()
+                if 0 < index_screen - 1:
+                    for x in label_list:
+                        x.destroy()
+                    label_list = []
+                    index_screen -= 1
+                    Print_Label()
 
             def Next():
                 global label_list, index_screen, index_contact
-                for x in label_list:
-                    x.destroy()
-                label_list = []
-                index_screen += 1
-                Print_Label()
+                if index_screen + 1 < index_contact/6 + 0.99:
+                    for x in label_list:
+                        x.destroy()
+                    label_list = []
+                    index_screen += 1
+                    Print_Label()
 
-            previous_button = Button(contacts_screen, text="<-", command=Previous, bg=Light_Blue)
+            previous_img = LoadImg("Left_Arrow_Icon.gif")
+            previous_button = Button(contacts_screen, image=previous_img, command=Previous, width=20, height=20, bg=Light_Blue)
             previous_button.place(x=130, y=105)
-            next_button = Button(contacts_screen, text="->", command=Next, bg=Light_Blue)
+            next_img = LoadImg("Right_Arrow_Icon.gif")
+            next_button = Button(contacts_screen, image=next_img, command=Next, width=20, height=20, bg=Light_Blue)
             next_button.place(x=130, y=130)
 
             def To_Main_Menu():
@@ -161,8 +167,10 @@ def Main_Window():
             searching_info.place(x=165, y=5)
             searching_entry = Entry(contacts_screen, width=8, bg=White)
             searching_entry.place(x=165, y=50)
-
+ 
             def Show_Contact():
+                global contact_flag, contact_info
+                contact_flag = True
                 contact_info = Canvas(main_window, width=245, height=172, bg=White)
                 contact_info.place(x=71, y=116)
 
@@ -195,61 +203,160 @@ def Main_Window():
                             e_mail = Label(contact_info, text=showing_data.e_mail, font=("Haettenschweiler", 17), bg=White, fg=color)
                             e_mail.place(x=10, y=77.5)
 
+                        if english:
+                            new_label = Label(contact_info, text="New", font=("Haettenschweiler", 17), bg=White, fg=color)
+                            data_label = Label(contact_info, text="Change", font=("Haettenschweiler", 17), bg=White, fg=color)
+                        if not english:
+                            new_label = Label(contact_info, text="Nuevo", font=("Haettenschweiler", 17), bg=White, fg=color)
+                            data_label = Label(contact_info, text="Cambiar", font=("Haettenschweiler", 17), bg=White, fg=color)
+                        new_label.place(x=2.5, y=146)
+                        new_info = Entry(contact_info, width=6, bg=White)
+                        new_info.place(x=51.5, y=152.5)
+                        data_label.place(x=100, y=146)
+                        data_info = Entry(contact_info, width=6, bg=White)
+                        data_info.place(x=161.5, y=152.5)
+
+                        contacts_screen.destroy()
+
                         def Edit():
-                            global english
-                            edit_screen = Canvas(main_window, width=245, height=172, bg=White)
-                            edit_screen.place(x=71, y=116)
-
-                            ID_entry = Entry(edit_screen, width=8, bg=White)
-                            ID_entry.place(x=67, y=27)
-                            name_entry = Entry(edit_screen, width=8, bg=White)
-                            name_entry.place(x=67, y=52)
-                            phone_entry = Entry(edit_screen, width=8, bg=White)
-                            phone_entry.place(x=67, y=77)
-                            cellphone_entry = Entry(edit_screen, width=8, bg=White)
-                            cellphone_entry.place(x=67, y=102)
-                            e_mail_entry = Entry(edit_screen, width=8, bg=White)
-                            e_mail_entry.place(x=67, y=127)
-                            pic_entry = Entry(edit_screen, width=8, bg=White)
-                            pic_entry.place(x=67, y=152)
-
-                            ID_label = Label(edit_screen, text="ID", font=("Haettenschweiler", 14), bg=White)
                             if english:
-                                name_label = Label(edit_screen, text="Name", font=("Haettenschweiler", 14), bg=White)
-                                phone_label = Label(edit_screen, text="Phone", font=("Haettenschweiler", 14), bg=White)
-                                cellphone_label = Label(edit_screen, text="Cellphone", font=("Haettenschweiler", 14), bg=White)
-                                e_mail_label = Label(edit_screen, text="E-mail", font=("Haettenschweiler", 14), bg=White)
-                                pic_label = Label(edit_screen, text="Picture", font=("Haettenschweiler", 14), bg=White)
-                            ID_label.place(x=28, y=24)
-                            name_label.place(x=16, y=49)
-                            phone_label.place(x=14, y=74)
-                            cellphone_label.place(x=5, y=99)
-                            e_mail_label.place(x=14.5, y=124)
-                            pic_label.place(x=9, y=149)
-
-                            back_button = Button(edit_screen, image=return_img, command=edit_screen.destroy, width=20, height=20, bg=Light_Red)
-                            back_button.place(x=221, y=148.5)
-
-                            main_window.mainloop()
+                                if data_info.get() == "Name":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, new_info.get(), showing_data.phone, showing_data.cellphone, showing_data.e_mail, showing_data.pic)
+                                if data_info.get() == "Phone":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, showing_data.name, new_info.get(), showing_data.cellphone, showing_data.e_mail, showing_data.pic)
+                                if data_info.get() == "Cellphone":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, showing_data.name, showing_data.phone, new_info.get(), showing_data.e_mail, showing_data.pic)
+                                if data_info.get() == "E-mail":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, showing_data.name, showing_data.phone, showing_data.cellphone, new_info.get(), showing_data.pic)
+                                if data_info.get() == "Picture":
+                                    try:
+                                        contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                        contacts.__create__(contacts, showing_data.name, showing_data.phone, showing_data.cellphone, showing_data.e_mail, new_info.get())
+                                    except:
+                                        print("Error: Image not found")
+                            if not english:
+                                if data_info.get() == "Nombre":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, new_info.get(), showing_data.phone, showing_data.cellphone, showing_data.e_mail, showing_data.pic)
+                                if data_info.get() == "Teléfono":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, showing_data.name, new_info.get(), showing_data.cellphone, showing_data.e_mail, showing_data.pic)
+                                if data_info.get() == "Célular":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, showing_data.name, showing_data.phone, new_info.get(), showing_data.e_mail, showing_data.pic)
+                                if data_info.get() == "Correo":
+                                    contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                    contacts.__create__(contacts, showing_data.name, showing_data.phone, showing_data.cellphone, new_info.get(), showing_data.pic)
+                                if data_info.get() == "Foto":
+                                    try:
+                                        contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                                        contacts.__create__(contacts, showing_data.name, showing_data.phone, showing_data.cellphone, showing_data.e_mail, new_info.get())
+                                    except:
+                                        print("Error: Imagen no encontrada")
 
                         def Delete():
                             contacts.__delete__(contacts, contacts.__contact_list__(contacts), showing_data.ID)
+                            Destroy_Screen()
 
                         edit_icon = LoadImg("Edit_Icon.gif")
                         edit_button = Button(contact_info, image=edit_icon, command=Edit, width=20, height=20, bg=color)
-                        edit_button.place(x=35, y=140)
+                        edit_button.place(x=2.5, y=120)
 
                         delete_icon = LoadImg("Erase_Icon.gif")
                         delete_button = Button(contact_info, image=delete_icon, command=Delete, width=20, height=20, bg=color)
-                        delete_button.place(x=70, y=140)
+                        delete_button.place(x=221, y=120)
 
-                    back_button = Button(contact_info, image=return_img, command=contact_info.destroy, width=20, height=20, bg=Light_Red)
-                    back_button.place(x=221, y=148.5)
+                    def Destroy_Screen():
+                        global contact_flag
+                        contact_flag = False
+                        contact_info.destroy()
+                        Contacts_Screen()
+
+                    back_button = Button(contact_info, image=return_img, command=Destroy_Screen, width=20, height=20, bg=Light_Red)
+                    back_button.place(x=221, y=147.5)
 
                     main_window.mainloop()
 
                 except:
                     contact_info.destroy()
+
+            def Create_Contact():
+                global new_contact_flag, new_contact
+                new_contact_flag = True
+                new_contact = Canvas(main_window, width=245, height=172, bg=White)
+                new_contact.place(x=71, y=116)
+
+                if english:
+                    name_label = Label(new_contact, text="Name", font=("Haettenschweiler", 14), bg=White)
+                    phone_label = Label(new_contact, text="Phone", font=("Haettenschweiler", 14), bg=White)
+                    cellphone_label = Label(new_contact, text="Cellphone", font=("Haettenschweiler", 14), bg=White)
+                    e_mail_label = Label(new_contact, text="E-mail", font=("Haettenschweiler", 14), bg=White)
+                    pic_label = Label(new_contact, text="Picture", font=("Haettenschweiler", 14), bg=White)
+                    name_label.place(x=16, y=49)
+                    phone_label.place(x=14, y=74)
+                    cellphone_label.place(x=5, y=99)
+                    e_mail_label.place(x=14.5, y=124)
+                    pic_label.place(x=9, y=149)
+                if not english:
+                    name_label = Label(new_contact, text="Nombre", font=("Haettenschweiler", 14), bg=White)
+                    phone_label = Label(new_contact, text="Teléfono", font=("Haettenschweiler", 14), bg=White)
+                    cellphone_label = Label(new_contact, text="Célular", font=("Haettenschweiler", 14), bg=White)
+                    e_mail_label = Label(new_contact, text="Correo", font=("Haettenschweiler", 14), bg=White)
+                    pic_label = Label(new_contact, text="Foto", font=("Haettenschweiler", 14), bg=White)
+                    name_label.place(x=6.5, y=49)
+                    phone_label.place(x=5, y=74)
+                    cellphone_label.place(x=11, y=99)
+                    e_mail_label.place(x=9.5, y=124)
+                    pic_label.place(x=15.5, y=149)
+
+                name_entry = Entry(new_contact, width=8, bg=White)
+                name_entry.place(x=67, y=52)
+                phone_entry = Entry(new_contact, width=8, bg=White)
+                phone_entry.place(x=67, y=77)
+                cellphone_entry = Entry(new_contact, width=8, bg=White)
+                cellphone_entry.place(x=67, y=102)
+                e_mail_entry = Entry(new_contact, width=8, bg=White)
+                e_mail_entry.place(x=67, y=127)
+                pic_entry = Entry(new_contact, width=8, bg=White)
+                pic_entry.place(x=67, y=152)
+
+                def Create():
+                    global english
+                    if  name_entry.get() != "" and (phone_entry.get() != "" or cellphone_entry.get() != "" or e_mail_entry.get() != ""):
+                        try:
+                            if pic_entry.get() != "":
+                                LoadImg(pic_entry.get())
+                            contacts.__create__(contacts, name_entry.get(), phone_entry.get(), cellphone_entry.get(), e_mail_entry.get(), pic_entry.get())
+                        except:
+                            if english:
+                                print("Error: Image not found")
+                            if not english:
+                                print("Error: Imagen no encontrada")
+
+                def Cancel_Create():
+                    global new_contact_flag
+                    new_contact_flag = False
+                    new_contact.destroy()
+                    Contacts_Screen()
+
+                if english:
+                    create_button = Button(new_contact, text="Create", font=("Haettenschweiler", 14), command=Create, bg=Light_Green)
+                if not english:
+                    create_button = Button(new_contact, text="Crear", font=("Haettenschweiler", 14), command=Create, bg=Light_Green)
+                create_button.place(x=160, y=100)
+
+                back_button = Button(new_contact, image=return_img, command=Cancel_Create, width=20, height=20, bg=Light_Red)
+                back_button.place(x=221, y=147.5)
+
+                main_window.mainloop()
+
+            new_icon = LoadImg("New_Icon.gif")
+            create_button = Button(contacts_screen, image=new_icon, command=Create_Contact, width=20, height=20, bg=Orange)
+            create_button.place(x=177, y=120)
 
             search_img = LoadImg("Search_Icon.gif")
             searching_ID_button = Button(contacts_screen, image=search_img, command=Show_Contact, width=25, height=25, bg=Light_Blue)
@@ -456,8 +563,9 @@ def Main_Window():
 
             start_screen.mainloop()
 
+    # function that check every flag to destroy the current screen or create a new one and create the start screen
     def Turn_():
-        global on_flag, start_flag, mm_flag, contacts_flag, calendar_flag, game_flag, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen, calendar_screen, game_screen, english
+        global on_flag, start_flag, mm_flag, contacts_flag, contact_flag, new_contact_flag, calendar_flag, game_flag, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen, contact_info, calendar_screen, game_screen, english
         if not on_flag:
             on_flag = True
             start_flag = True
@@ -474,6 +582,12 @@ def Main_Window():
             if contacts_flag:
                 contacts_flag = False
                 contacts_screen.destroy()
+            if contact_flag:
+                contact_flag = False
+                contact_info.destroy()
+            if new_contact_flag:
+                new_contact_flag = False
+                new_contact.destroy()
             if calendar_flag:
                 calendar_flag = False
                 calendar_screen.destroy()
