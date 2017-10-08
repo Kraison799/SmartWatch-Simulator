@@ -25,7 +25,7 @@ def LoadImg(img_name):
     image = PhotoImage(file=img_path)
     return image
 
-### Constants ###
+### Color Codes ###
 # colors used in the program
 White = "#FAFAFA"
 Black = "#000000"
@@ -51,20 +51,22 @@ contact_flag = False
 new_contact_flag = False
 calendar_flag = False
 game_flag = False
+gaming = False
 
 # for control of the threads
 thread_1_flag = False
 thread_2_flag = False
 
 # language and password
-english = False # True: english / False: spanish
-password = "7052" # pin code
+english = True # True: english / False: spanish
+password = "2614" # pin code
+game_words_english = ["efficiency", "recursion", "argument"]
 
 ### Main Window ###
 # main window of the program that shows the watch with its screen
 def Main_Window():
     global on_flag, start_flag, mm_flag, contacts_flag, clock, thread_1_flag, thread_2_flag, pin_attempts, start_screen, main_menu, contacts_screen, english
-    # basic definitions of the main window (size, name, canvas)
+    # basic definitions of the main window (size, name, main canvas)
     main_window = Tk()
     main_window.title("SmartWatch")
     main_window.minsize(400, 400)
@@ -92,7 +94,7 @@ def Main_Window():
 
     # function for the contacts screen
     def Contacts_Screen():
-        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag, english, index_contact, index_screen
+        global mm_flag, contacts_flag, contacts_screen, thread_1_flag, thread_2_flag, english, index_contact, index_screen, english
         if contacts_flag:
             # definition of the contacts screen
             contacts_screen = Canvas(main_window, width=245, height=172, bg=White)
@@ -169,7 +171,7 @@ def Main_Window():
             searching_entry.place(x=165, y=50)
  
             def Show_Contact():
-                global contact_flag, contact_info
+                global contact_flag, contact_info, english
                 contact_flag = True
                 contact_info = Canvas(main_window, width=245, height=172, bg=White)
                 contact_info.place(x=71, y=116)
@@ -285,7 +287,7 @@ def Main_Window():
                     contact_info.destroy()
 
             def Create_Contact():
-                global new_contact_flag, new_contact
+                global new_contact_flag, new_contact, english
                 new_contact_flag = True
                 new_contact = Canvas(main_window, width=245, height=172, bg=White)
                 new_contact.place(x=71, y=116)
@@ -395,6 +397,117 @@ def Main_Window():
             game_screen = Canvas(main_window, width=245, height=172, bg=White)
             game_screen.place(x=71, y=116)
 
+            if english:
+                letter_label = Label(game_screen, text="Letter", font=("Haettenschweiler", 14), bg=White)
+            if not english:
+                letter_label = Label(game_screen, text="Letra", font=("Haettenschweiler", 14), bg=White)
+            letter_label.place(x=135, y=44)
+            letter_entry = Entry(game_screen, width=3, bg=White)
+            letter_entry.place(x=180, y=50)
+
+            head = game_screen.create_oval(67.5, 55, 92.5, 80, fill=Black)
+            line_1 = game_screen.create_line(25, 30, 25, 170, width=5, fill=Black)
+            line_2 = game_screen.create_line(25, 30, 80, 30, width=5, fill=Black)
+            line_3 = game_screen.create_line(80, 30, 80, 67.5, width=5, fill=Black)
+            line_4 = game_screen.create_line(80, 67.5, 80, 120, width=5, fill=Black)
+            line_5 = game_screen.create_line(80, 82.5, 62.5, 117.5, width=5, fill=Black)
+            line_6 = game_screen.create_line(80, 82.5, 97.5, 117.5, width=5, fill=Black)
+            line_7 = game_screen.create_line(80, 120, 62.5, 155, width=5, fill=Black)
+            line_8 = game_screen.create_line(80, 120, 97.5, 155, width=5, fill=Black)
+
+            def Print_Answer():
+                global answer, answer_label
+                answer_label = Label(game_screen, text=answer, font=("Haettenschweiler", 15), bg=White)
+                answer_label.place(x=160, y=80)
+
+            def Start_Game():
+                global game_attempts, answer, word, gaming, answer_label
+                if gaming:
+                    answer_label.destroy()
+                gaming = True
+                if english:
+                    word = random.choice(game_words_english)
+                if not english:
+                    word = random.choice(game_words_spanish)
+                i = 0
+                answer = ""
+                while i != len(word):
+                    answer += "*"
+                    i += 1
+                game_attempts = 9
+                Draw()
+                Print_Answer()
+
+            def Draw():
+                global game_attempts, english
+                if game_attempts == 9:
+                    wipe = game_screen.create_rectangle(20, 25, 100, 172, fill=White, outline=White)
+                if game_attempts == 8:
+                    line_1 = game_screen.create_line(25, 30, 25, 170, width=5, fill=Black)
+                if game_attempts == 7:
+                    line_2 = game_screen.create_line(25, 30, 80, 30, width=5, fill=Black)
+                if game_attempts == 6:
+                    line_3 = game_screen.create_line(80, 30, 80, 67.5, width=5, fill=Black)
+                if game_attempts == 5:
+                    head = game_screen.create_oval(67.5, 55, 92.5, 80, fill=Black)
+                if game_attempts == 4:
+                    line_4 = game_screen.create_line(80, 67.5, 80, 120, width=5, fill=Black)
+                if game_attempts == 3:
+                    line_5 = game_screen.create_line(80, 82.5, 62.5, 117.5, width=5, fill=Black)
+                if game_attempts == 2:
+                    line_6 = game_screen.create_line(80, 82.5, 97.5, 117.5, width=5, fill=Black)
+                if game_attempts == 1:
+                    line_7 = game_screen.create_line(80, 120, 62.5, 155, width=5, fill=Black)
+                if game_attempts == 0:
+                    line_8 = game_screen.create_line(80, 120, 97.5, 155, width=5, fill=Black)
+                    Lose()
+
+            def Lose():
+                global gaming, english
+                wipe = game_screen.create_rectangle(20, 25, 100, 172, fill=White, outline=White)
+                if english:
+                    lose_msg = Label(game_screen, text="You lose!!", font=("Haettenschweiler", 14), bg=White, fg=Light_Red)
+                if not english:
+                    lose_msg = Label(game_screen, text="¡¡Perdiste!!", font=("Haettenschweiler", 14), bg=White, fg=Light_Red)
+                lose_msg.place(x=10, y=10)
+                head = game_screen.create_oval(67.5, 55, 92.5, 80, fill=Light_Red)
+                gaming = False
+
+            def Win():
+                global gaming, english
+                wipe = game_screen.create_rectangle(20, 25, 100, 172, fill=White, outline=White)
+                if english:
+                    winning = Label(game_screen, text="Congratulations!!", font=("Haettenschweiler", 14), bg=White, fg=Light_Green)
+                if not english:
+                    winning = Label(game_screen, text="¡¡Felicidades!!", font=("Haettenschweiler", 14), bg=White, fg=Light_Green)
+                winning.place(x=10, y=10)
+                head = game_screen.create_oval(67.5, 55, 92.5, 80, fill=Light_Green)
+                gaming = False
+
+            def Try():
+                global game_attempts, word, answer, gaming, answer_label
+                if len(letter_entry.get()) == 1 and gaming:
+                    answer_label.destroy()
+                    i = 0
+                    new_answer = ""
+                    answer_flag = False
+                    while i != len(word):
+                        if letter_entry.get().lower() != word[i] and word[i] != answer[i]:
+                            new_answer += "*"
+                        if letter_entry.get().lower() == word[i]:
+                            answer_flag = True
+                            new_answer += word[i]
+                        if word[i] == answer[i]:
+                            new_answer += word[i]
+                        i += 1
+                    answer = new_answer
+                    Print_Answer()
+                    if not answer_flag:
+                        game_attempts -= 1
+                        Draw()
+                    if answer == word:
+                        Win()
+
             def To_Main_Menu():
                 global mm_flag, game_flag, thread_1_flag, thread_2_flag
                 mm_flag = True
@@ -403,6 +516,15 @@ def Main_Window():
                 thread_2_flag = True
                 game_screen.destroy()
                 Main_Menu()
+
+            if english:
+                start_button = Button(game_screen, text="Start", font=("Haettenschweiler", 11), command=Start_Game, bg=Light_Green)
+                try_button = Button(game_screen, text="Try", font=("Haettenschweiler", 11), command=Try, bg=Light_Green)
+            if not english:
+                start_button = Button(game_screen, text="Jugar", font=("Haettenschweiler", 11), command=Start_Game, bg=Light_Green)
+                try_button = Button(game_screen, text="Probar", font=("Haettenschweiler", 11), command=Try, bg=Light_Green)
+            start_button.place(x=213.5, y=145)
+            try_button.place(x=205, y=45)
 
             return_img = LoadImg("Return_Icon.gif")
             return_button = Button(game_screen, image=return_img, command=To_Main_Menu, width=20, height=20, bg=Light_Red)
@@ -445,6 +567,15 @@ def Main_Window():
                     time.sleep(1)
                     clock_label.destroy()
 
+            def Date_Label():
+                global thread_1_flag
+                if thread_1_flag:
+                    date = str(clock.day) + "/" + str(clock.month) + "/" + str(clock.year)
+                    date_label = Label(main_menu, text=date, font=("Haettenschweiler", 17), bg=White, fg=Dark_Blue)
+                    date_label.place(x=145, y=18)
+
+            Date_Label()
+
             hour_thread = Thread(target=Clock_Label)
             hour_thread.start()
 
@@ -481,7 +612,7 @@ def Main_Window():
 
             calendar_icon = LoadImg("Calendar_Icon.gif")
             calendar_button = Button(main_menu, image=calendar_icon, width=25, height=25, command=To_Calendar, bg=Orange)
-            calendar_button.place(x=80, y=120)
+            calendar_button.place(x=85, y=120)
 
             game_icon = LoadImg("Game_Icon.gif")
             game_button = Button(main_menu, image=game_icon, width=25, height=25, command=To_Game, bg=Purple)
@@ -597,10 +728,20 @@ def Main_Window():
             thread_1_flag = False
             thread_2_flag = False
 
+    def Language():
+        global english
+        if english:
+            english = False
+        if not english:
+            english = True
+
+    language_button = Button(main_canvas, command=Language, width=30, height=30, bg=Light_Blue)
+    language_button.place(x=364, y=332)
+
     # button to turn on/off the watch
     on_off_img = LoadImg("On_Off.gif")
-    on_off_button = Button(main_canvas, image=on_off_img, command=Turn_, width=30, height=30, bg="#FAFAFA")
-    on_off_button.place(x=366, y=366)
+    on_off_button = Button(main_canvas, image=on_off_img, command=Turn_, width=30, height=30, bg=White)
+    on_off_button.place(x=364, y=364)
 
     main_window.mainloop()
 
