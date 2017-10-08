@@ -1,0 +1,99 @@
+### Libraries ###
+
+import os
+
+### Calendar ###
+
+class Calendar:
+    def __read__(self):
+        file_path = os.path.join("docs", "Events.txt")
+        file = open(file_path, "r+")
+        event_list = []
+        seek_point = 0
+        while file.readline() != "":
+            file.seek(seek_point)
+            event = file.readline()[0:-1]
+            event_list.append(event)
+            seek_point += len(event)+1
+        file.close()
+        for x in event_list:
+            if x == "":
+                event_list.remove(x)
+
+        return event_list
+
+    def __save_list__(self, info_list):
+        save_data = ""
+        for x in info_list:
+            save_data += x.ID + "/" + x.day + "/" + x.month + "/" + x.year + "/" + x.hour + "/" + x.event + "/\n"
+        file_path = os.path.join("docs", "Events.txt")
+        file = open(file_path, "r+")
+        file.truncate(0)
+        file.write(save_data)
+        file.close()
+
+    def __create__(self, day, month, year, hour, event):
+        new_event = Event("1", day, month, year, hour, event)
+        event_list = self.__event_list__(self)
+        event_list.append(new_event)
+        self.__save_list__(self, event_list)
+
+    def __event_list__(self):
+        str_list = self.__read__(self)
+        event_list = list()
+        for x in str_list:
+            data = ""
+            index = 0
+            event = Event("", "", "", "", "", "")
+            while x != "":
+                if x[0] == "/":
+                    if index == 0:
+                        contact.ID = data
+                    if index == 1:
+                        contact.day = data
+                    if index == 2:
+                        contact.month = data
+                    if index == 3:
+                        contact.year = data
+                    if index == 4:
+                        contact.hour = data
+                    if index == 5:
+                        contact.event = data
+                    data = ""
+                    index += 1
+                else:
+                    data += x[0]
+                x = x[1:]
+
+            event_list.append(event)
+
+        return event_list
+
+    def __delete__(self, info_list, delete_ID):
+        save_data = ""
+        for x in info_list:
+            if x.ID != delete_ID:
+                save_data += x.ID + "/" + x.day + "/" + x.month + "/" + x.year + "/" + x.hour + "/" + x.event + "/\n"
+        file_path = os.path.join("docs", "Events.txt")
+        file = open(file_path, "r+")
+        file.truncate(0)
+        file.write(save_data)
+        file.close()
+
+    def __search__(self, s_day, s_month, s_year):
+        for x in self.__event_list__(self):
+            if x.day == s_day and x.month == s_month and x.year == s_year:
+                return x
+
+class Event:
+    def __init__(self, ID, day, month, year, hour, event):
+        self.ID = ID
+        self.day = day
+        self.month = month
+        self.year = year
+        self.hour = hour
+        self.event = event
+
+    def __save_event__(self):
+        saving_str = str(self.ID+"/"+self.day+"/"+self.month+"/"+self.year+"/"+self.hour+"/"+self.event)
+        return saving_str
